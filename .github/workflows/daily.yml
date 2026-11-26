@@ -1,0 +1,32 @@
+name: daily
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/cache/restore@v4
+        with: { path: state, key: daily-${{ github.run_id }}, restore-keys: daily- }
+      - name: daily brief
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+          PREDEXON_KEY: ${{ secrets.PREDEXON_KEY }}
+        run: node daily.mjs
+      - uses: actions/cache/save@v4
+        if: always()
+        with: { path: state, key: daily-${{ github.run_id }} }
+      - name: keepalive (scheduled workflows stop after 60 days without commits)
+        run: |
+          date -u > .keepalive
+          git config user.name scanner-bot; git config user.email scanner-bot@users.noreply.github.com
+          git add .keepalive; git commit -m "keepalive" && git push || true
