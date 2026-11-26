@@ -1,0 +1,33 @@
+name: watch
+on:
+  schedule:
+    - cron: '2 * * * *'
+  workflow_dispatch:
+concurrency:
+  group: watch
+  cancel-in-progress: false
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/cache/restore@v4
+        with: { path: state, key: watch-${{ github.run_id }}, restore-keys: watch- }
+      - name: loop every 5 minutes for ~55 minutes
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+        run: |
+          end=$(( $(date +%s) + 3300 ))
+          while [ $(date +%s) -lt $end ]; do
+            start=$(date +%s)
+            node watcher.mjs || echo "watcher error"
+            el=$(( $(date +%s) - start )); [ $el -lt 300 ] && sleep $(( 300 - el ))
+          done
+      - uses: actions/cache/save@v4
+        if: always()
+        with: { path: state, key: watch-${{ github.run_id }} }
