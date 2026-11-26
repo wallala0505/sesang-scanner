@@ -51,5 +51,5 @@ export async function telegram(text){
   while(rest.length){let cut=rest.length<=3900?rest.length:rest.lastIndexOf('\n',3900);if(cut<1000)cut=3900;chunks.push(rest.slice(0,cut));rest=rest.slice(cut).trim();}
   for(const c of chunks){const r=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat_id,text:c,disable_web_page_preview:true})});const j=await r.json();if(!j.ok)throw new Error('telegram '+JSON.stringify(j))}
 }
-export const STYLE='한국어, 텔레그램용 일반 텍스트(마크다운 기호 *, #, ** 금지, 이모지 금지, 긴 대시 금지). 숫자는 주어진 데이터만 쓰고 지어내지 말 것. 뉴스 헤드라인에 근거가 없으면 "관련 기사 없음(뉴스 선행 가능성)"이라고 쓸 것. 투자 권유 표현 금지.';
+export const STYLE='한국어, 텔레그램용 일반 텍스트(마크다운 기호 *, #, ** 금지, 이모지 금지, 긴 대시 금지). 숫자는 주어진 데이터만 쓰고 지어내지 말 것. 뉴스 헤드라인에 근거가 없으면 "관련 기사 없음(뉴스 선행 가능성)"이라고 쓸 것. 투자 권유 표현 금지. 거래소 이름은 항상 영문 Kalshi, Polymarket으로 표기.';
 export const PROFILE=()=>`독자: 미국 주식과 크립토에 투자하는 한국 개인투자자. 관심사: ${C.profile.interests.join(', ')}.`;
