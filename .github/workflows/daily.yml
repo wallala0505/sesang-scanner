@@ -12,9 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22 }
+        with:
+          node-version: 22
       - uses: actions/cache/restore@v4
-        with: { path: state, key: daily-${{ github.run_id }}, restore-keys: daily- }
+        with:
+          path: state
+          key: daily-${{ github.run_id }}
+          restore-keys: daily-
       - name: daily brief
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -24,9 +28,13 @@ jobs:
         run: node daily.mjs
       - uses: actions/cache/save@v4
         if: always()
-        with: { path: state, key: daily-${{ github.run_id }} }
-      - name: keepalive (scheduled workflows stop after 60 days without commits)
+        with:
+          path: state
+          key: daily-${{ github.run_id }}
+      - name: keepalive commit (scheduled workflows stop after 60 days without activity)
         run: |
           date -u > .keepalive
-          git config user.name scanner-bot; git config user.email scanner-bot@users.noreply.github.com
-          git add .keepalive; git commit -m "keepalive" && git push || true
+          git config user.name scanner-bot
+          git config user.email scanner-bot@users.noreply.github.com
+          git add .keepalive
+          git commit -m "keepalive" && git push || true
