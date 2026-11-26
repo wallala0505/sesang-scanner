@@ -1,15 +1,20 @@
 name: watch
+# GitHub 예약 실행은 자주 지연/누락되므로: 한 번 실행되면 약 5시간 40분 동안 5분 간격으로 돌고,
+# 끝날 때 다음 실행을 스스로 시작한다(self-chain). 예약(cron)은 체인이 끊겼을 때 다시 살리는 보조 장치.
 on:
   schedule:
-    - cron: '2 * * * *'
+    - cron: '7 */3 * * *'
   workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
 concurrency:
   group: watch
   cancel-in-progress: false
 jobs:
   watch:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,15 +25,22 @@ jobs:
           path: state
           key: watch-${{ github.run_id }}
           restore-keys: watch-
-      - name: loop every 5 minutes for about 55 minutes (prediction markets + headlines)
+      - name: loop every 5 minutes (prediction markets + headlines) and trigger daily at 08:00 KST
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          end=$(( $(date +%s) + 3300 ))
+          mkdir -p state
+          end=$(( $(date +%s) + 20400 ))
           while [ $(date +%s) -lt $end ]; do
             start=$(date +%s)
+            # 데일리 브리핑: 한국시간 08:00 이후 그날 아직 안 보냈으면 실행
+            kstdate=$(TZ=Asia/Seoul date +%F); ksth=$(TZ=Asia/Seoul date +%H)
+            if [ "$ksth" -ge 8 ] && [ "$(cat state/last_daily 2>/dev/null)" != "$kstdate" ]; then
+              gh workflow run daily.yml -R "$GITHUB_REPOSITORY" && echo "$kstdate" > state/last_daily && echo "daily triggered $kstdate"
+            fi
             timeout 150 node watcher.mjs || echo "watcher error"
             timeout 140 node headlines.mjs || echo "headlines error"
             el=$(( $(date +%s) - start ))
@@ -39,3 +51,8 @@ jobs:
         with:
           path: state
           key: watch-${{ github.run_id }}
+      - name: chain next run
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run watch.yml -R "$GITHUB_REPOSITORY"

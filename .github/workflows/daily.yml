@@ -33,14 +33,24 @@ jobs:
           path: state
           key: daily-${{ github.run_id }}
           restore-keys: daily-
+      - name: skip if already sent today (KST)
+        id: guard
+        run: |
+          d=$(TZ=Asia/Seoul date +%F)
+          if [ "$(cat state/daily_sent 2>/dev/null)" = "$d" ]; then echo skip=1 >> $GITHUB_OUTPUT; else echo skip=0 >> $GITHUB_OUTPUT; fi
       - name: daily brief (prediction markets)
-        if: ${{ !inputs.skip_brief }}
-        run: node daily.mjs || echo "daily error"
+        if: ${{ !inputs.skip_brief && steps.guard.outputs.skip != '1' }}
+        run: |
+          node daily.mjs || echo "daily error"
+          mkdir -p state && TZ=Asia/Seoul date +%F > state/daily_sent
       - name: options chain daily (CBOE + CRSI)
+        if: ${{ steps.guard.outputs.skip != '1' }}
         run: node options.mjs || echo "options error"
       - name: Kalshi vs Polymarket gaps
+        if: ${{ steps.guard.outputs.skip != '1' }}
         run: node arb.mjs || echo "arb error"
       - name: weekly hypothesis test (Sundays KST)
+        if: ${{ steps.guard.outputs.skip != '1' }}
         env:
           FORCE: ${{ inputs.force_weekly && '1' || '' }}
         run: node weekly.mjs || echo "weekly error"
