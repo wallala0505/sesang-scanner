@@ -12,6 +12,7 @@ for(const r of rows){
   if(r.close&&(new Date(r.close)-now)/3600e3<C.minHoursToClose)continue;
   const liq=Math.max(r.oi,r.v24),text=(r.q+' '+r.opt).toLowerCase(),interested=kw.some(k=>text.includes(k)),f=interested?C.interestBoostFactor:1;
   if(liq<C.minLiquidityUSD*f)continue;
+  if(r.v24<(C.minVolume24hUSD??2000))continue; // 거래가 거의 없는 마켓의 호가 튐 제외
   const at=ms=>{let b=null;for(const x of h){if(now-x[0]>=ms*0.8&&now-x[0]<=ms*1.6)b=x}return b};
   const p5=at(5*60e3),p60=at(60*60e3);
   const d5=p5?Math.round((r.p-p5[1])*100):null,d60=p60?Math.round((r.p-p60[1])*100):null;
