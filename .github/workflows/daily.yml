@@ -8,7 +8,12 @@ permissions:
 jobs:
   daily:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
+    env:
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+      PREDEXON_KEY: ${{ secrets.PREDEXON_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,13 +24,14 @@ jobs:
           path: state
           key: daily-${{ github.run_id }}
           restore-keys: daily-
-      - name: daily brief
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
-          PREDEXON_KEY: ${{ secrets.PREDEXON_KEY }}
-        run: node daily.mjs
+      - name: daily brief (prediction markets)
+        run: node daily.mjs || echo "daily error"
+      - name: options chain daily (CBOE + CRSI)
+        run: node options.mjs || echo "options error"
+      - name: Kalshi vs Polymarket gaps
+        run: node arb.mjs || echo "arb error"
+      - name: weekly hypothesis test (Sundays KST)
+        run: node weekly.mjs || echo "weekly error"
       - uses: actions/cache/save@v4
         if: always()
         with:
@@ -36,5 +42,6 @@ jobs:
           date -u > .keepalive
           git config user.name scanner-bot
           git config user.email scanner-bot@users.noreply.github.com
+          git pull --rebase || true
           git add .keepalive
           git commit -m "keepalive" && git push || true

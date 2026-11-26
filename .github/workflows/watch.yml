@@ -20,7 +20,7 @@ jobs:
           path: state
           key: watch-${{ github.run_id }}
           restore-keys: watch-
-      - name: loop every 5 minutes for about 55 minutes
+      - name: loop every 5 minutes for about 55 minutes (prediction markets + headlines)
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -29,7 +29,8 @@ jobs:
           end=$(( $(date +%s) + 3300 ))
           while [ $(date +%s) -lt $end ]; do
             start=$(date +%s)
-            node watcher.mjs || echo "watcher error"
+            timeout 150 node watcher.mjs || echo "watcher error"
+            timeout 140 node headlines.mjs || echo "headlines error"
             el=$(( $(date +%s) - start ))
             if [ $el -lt 300 ]; then sleep $(( 300 - el )); fi
           done
