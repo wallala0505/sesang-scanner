@@ -3,6 +3,15 @@ on:
   schedule:
     - cron: '0 23 * * *'
   workflow_dispatch:
+    inputs:
+      skip_brief:
+        description: 'skip daily brief (test other jobs only)'
+        type: boolean
+        default: false
+      force_weekly:
+        description: 'run weekly report now'
+        type: boolean
+        default: false
 permissions:
   contents: write
 jobs:
@@ -25,12 +34,15 @@ jobs:
           key: daily-${{ github.run_id }}
           restore-keys: daily-
       - name: daily brief (prediction markets)
+        if: ${{ !inputs.skip_brief }}
         run: node daily.mjs || echo "daily error"
       - name: options chain daily (CBOE + CRSI)
         run: node options.mjs || echo "options error"
       - name: Kalshi vs Polymarket gaps
         run: node arb.mjs || echo "arb error"
       - name: weekly hypothesis test (Sundays KST)
+        env:
+          FORCE: ${{ inputs.force_weekly && '1' || '' }}
         run: node weekly.mjs || echo "weekly error"
       - uses: actions/cache/save@v4
         if: always()
