@@ -29,7 +29,8 @@ signals.sort((a,b)=>b.score-a.score);
 const seen=new Set(),uniq=[];for(const s of signals){if(!seen.has(s.ev)){seen.add(s.ev);uniq.push(s)}if(uniq.length>=4)break}
 for(const s of uniq){alerted[s.tk]={ts:now,p:s.now/100};alerted['EV:'+s.ev]={ts:now,p:0}}
 for(const k of Object.keys(alerted))if(now-alerted[k].ts>48*3600e3)delete alerted[k];
-save('state/prices.json',newHist);save('state/alerted.json',alerted);
+save('state/prices.json',newHist);
+save('state/top_markets.json',rows.filter(r=>!noise.test(r.q)).sort((a,b)=>b.oi-a.oi).slice(0,250).map(r=>[r.q,r.opt,Math.round(r.p*100)+'%',kUrl(r.ev)]));save('state/alerted.json',alerted);
 if(!uniq.length){console.log('NO_SIGNAL',kst(now),'markets',rows.length);process.exit(0)}
 for(const s of uniq.slice(0,3)){s.distribution=await kalshiEvent(s.ev);s.headlines=await news(s.q.replace(/[?"]/g,'').slice(0,90))}
 const raw=uniq.map(s=>`${s.q} / ${s.opt}\n${s.why}, 현재 ${s.now}%\nOI $${s.oi} / 24h 거래 $${s.v24}\n${s.url}`).join('\n\n');

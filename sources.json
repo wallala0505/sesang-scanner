@@ -1,0 +1,91 @@
+{
+  "_note": "X 고신호 계정(@gammamukja 리스트) 대체 경로. telegram=공개 채널 웹 미리보기, rss=공식 피드, gnews=Google 뉴스 검색",
+  "telegram": [
+    {
+      "name": "walter_bloomberg",
+      "label": "Walter Bloomberg(@DeItaone 미러)",
+      "filter": true
+    },
+    {
+      "name": "FinancialJuice",
+      "label": "FinancialJuice",
+      "filter": true
+    }
+  ],
+  "rss": [
+    {
+      "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+      "label": "연준 보도자료",
+      "filter": false
+    },
+    {
+      "url": "https://www.federalreserve.gov/feeds/speeches.xml",
+      "label": "연준 연설",
+      "filter": false
+    },
+    {
+      "url": "https://www.bellingcat.com/feed/",
+      "label": "Bellingcat(OSINT)",
+      "filter": true
+    }
+  ],
+  "gnews": [
+    {
+      "q": "Nick Timiraos Fed",
+      "label": "Nick Timiraos(WSJ 연준)"
+    },
+    {
+      "q": "\"short seller\" report shares",
+      "label": "숏셀러 리포트(Chanos/Muddy Waters/Citron 등)"
+    },
+    {
+      "q": "(\"Muddy Waters Research\" OR \"Citron Research\" OR \"Jim Chanos\" OR \"Carson Block\") stock",
+      "label": "숏셀러"
+    },
+    {
+      "q": "\"unusual options activity\" OR \"unusual whales\"",
+      "label": "Unusual Whales/옵션 플로우"
+    },
+    {
+      "q": "Druckenmiller OR \"El-Erian\" OR \"Liz Ann Sonders\" OR Andurand",
+      "label": "매크로 거물"
+    }
+  ],
+  "edgar": {
+    "redFlagItems": [
+      "4.01",
+      "4.02"
+    ],
+    "watchItems": [
+      "5.02",
+      "3.01"
+    ],
+    "watchCompanies": [
+      "NVIDIA",
+      "Apple",
+      "Microsoft",
+      "Amazon",
+      "Alphabet",
+      "Meta Platforms",
+      "Tesla",
+      "Broadcom",
+      "Advanced Micro",
+      "Coinbase",
+      "MicroStrategy",
+      "Strategy Inc",
+      "Palantir",
+      "Netflix",
+      "Oracle",
+      "Intel",
+      "Super Micro",
+      "CoreWeave",
+      "Taiwan Semiconductor",
+      "JPMorgan",
+      "Goldman Sachs",
+      "Bank of America",
+      "Robinhood",
+      "Anthropic",
+      "OpenAI"
+    ]
+  }
+}
